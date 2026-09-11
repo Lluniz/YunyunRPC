@@ -35,7 +35,7 @@ Just play the game. The Discord Activity will show up automatically.
 
 ## Thanks
 
-This mod is inspired by [MDRPC](https://github.com/Braasileiro/MDRPC).
+- This mod is inspired by [MDRPC](https://github.com/Braasileiro/MDRPC).
 - **[EBro912](https://github.com/EBro912)** - Creator of [YunYunLoader](https://github.com/EBro912/YunYunLoader), for guidance on loader integration and extracting song titles, artists, and difficulty levels.
 
 ## Showcase
