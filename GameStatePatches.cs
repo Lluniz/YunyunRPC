@@ -1,9 +1,9 @@
-using HarmonyLib;
-using UnityEngine;
-using System.Reflection;
-using System.Collections.Generic;
 using App.InGame;
-using UnityEngine.SceneManagement;
+using HarmonyLib;
+using System.Reflection;
+using UnityEngine;
+using UnityEngine.Localization.Settings;
+using YunyunRPC;
 
 namespace YunyunRPC
 {
@@ -11,109 +11,30 @@ namespace YunyunRPC
     {
         public static bool IsPlaying = false;
         public static bool IsInResults = false;
-        public static string CurrentSong = "Unknown";
         public static string CurrentSongDisplayName = "Unknown";
+        public static string CurrentArtist = "Unknown Artist";
         public static int CurrentScore = 0;
         public static int CurrentCombo = 0;
         public static int MaxCombo = 0;
-        public static string Difficulty = "Normal";
+        public static string Difficulty = "NORMAL";
+        public static int DifficultyLevel = 0;
         public static bool IsPaused = false;
 
         public static int PerfectCount = 0;
         public static int GreatCount = 0;
         public static int GoodCount = 0;
         public static int MissCount = 0;
+        public static double CurrentRate = 1.0;
 
         private static FieldInfo gameControllerPointCalculatorField = null;
         private static FieldInfo gameControllerDataField = null;
         private static FieldInfo gameControllerViewModelField = null;
-        private static FieldInfo scoreDataSetMusicNameField = null;
         private static PropertyInfo gamePointCalculatorPointProperty = null;
         private static PropertyInfo gamePointCalculatorMaxComboProperty = null;
+        private static PropertyInfo gamePointCalculatorRateProperty = null;
+        private static MethodInfo gamePointCalculatorCalcRankMethod = null;
         private static bool cacheInitialized = false;
-
-        private static readonly Dictionary<string, string> SongNames = new Dictionary<string, string>
-        {
-            ["0"] = "Denpa-tic Imaginary Girl \"Q\"",
-            ["10"] = "Peak Ecstasy!! Rim de Lacent☆",
-            ["20"] = "YUNYUN HARDCORE",
-            ["30"] = "Antenna Light",
-            ["40"] = "DONIDEMONARE (Who cares anymore)",
-            ["50"] = "Marisa stole the precious thing",
-            ["60"] = "Kanbu de Tomatte sugu Tokeru Kyoki no Udongein",
-            ["70"] = "Cirno's Perfect Math Class",
-            ["80"] = "Nee,...shiyou yo!",
-            ["90"] = "Mighty Heart ~Aru Hi no Kenka, Itsumo no Koigokoro~",
-            ["100"] = "sakuranbokissu~bakuhatsudamo~n~",
-            ["110"] = "Kyururun Kiss de Janbo ♪ ♪",
-            ["120"] = "Raspberry",
-            ["130"] = "Achichi na Natsu no Monogatari",
-            ["140"] = "Princess Bride!",
-            ["150"] = "Princess Brave!",
-            ["160"] = "Change my Style~Anata gonomi no Watashi ni~",
-            ["170"] = "true my heart",
-            ["180"] = "Love Cheat!",
-            ["190"] = "Gacha Gacha Cute Figu@mate",
-            ["200"] = "Senno Sakushu Tora no Maki",
-            ["210"] = "INTERNET OVERDOSE",
-            ["220"] = "INTERNET YAMERO",
-            ["230"] = "Miko Miko Nurse - Ai no Theme",
-            ["240"] = "Dakko Shite Gyu!",
-            ["250"] = "PETTAN PETTAN TSURUPETTAN",
-            ["260"] = "summer is machine gun",
-            ["270"] = "winter is machine gun",
-            ["280"] = "Shukusei!! Loli Kami Requiem",
-            ["300"] = "CosmicKING☆sens@tion!!!!!!!!",
-            ["310"] = "MuseDashを作っているPeroPeroGamesさんが倒産しちゃったよ～",
-            ["1000"] = "Help me, ERINNNNNN!! (Band ver.)",
-            ["1010"] = "Usatei",
-            ["1020"] = "Scarlet! Police!! on Ghetto Patrol",
-            ["1030"] = "Oyome ni Shinasai!",
-            ["1040"] = "Wakasagihime's 100 Sushi-Topping Game",
-            ["1050"] = "kero9destiny",
-            ["1120"] = "We are Pollen Fairies \"Pollino-Sis\"!",
-            ["1130"] = "Versus!",
-            ["1140"] = "Can I Friend you on Bassbook? lol",
-            ["1150"] = "Strongest Dental Caries Constructionist Starts Excavation",
-            ["1160"] = "I don't care about Christmas though",
-            ["1170"] = "FULLFLAVOR ONDO",
-            ["1180"] = "Newbies take 3 years, geeks 8 years, and internets are forever",
-            ["1190"] = "Energy-Dringirl Ffeine-chan!",
-            ["1200"] = "Please! Concon Inari-sama",
-            ["1210"] = "Denpa-tic Imaginary Girl \"Q\" (Cover)",
-            ["1220"] = "INTERNET OVERDOSE (Cover)",
-            ["1230"] = "INTERNET YAMERO (Cover)",
-            ["1240"] = "Bamboo",
-            ["1250"] = "Punai Punai Taiso",
-            ["1260"] = "Punai Punai Fantasy",
-            ["1270"] = "Punai Punai War",
-            ["1280"] = "Tanaka",
-            ["1290"] = "Waaa",
-            ["1300"] = "Kakikuke Caution",
-            ["1310"] = "Nitrogen",
-            ["1320"] = "As the angel says",
-            ["1330"] = "Pa Pi Pu Pi Pu Pi Pa",
-            ["1340"] = "B.B.K.K.B.K.K. (Rish&Choko Remix)",
-            ["1350"] = "MaiMai Memomo Memomo MaiMai",
-            ["1500"] = "Let's Go Lovely Henshin Time!",
-            ["1510"] = "LITTLE MY STAR",
-            ["1520"] = "Kurukuru lovely day!!!",
-            ["1530"] = "Gingakei no Uchuu no Hate made",
-            ["1540"] = "the first the last",
-            ["1550"] = "Shinseiji Kono Koi To Kimi To Atashi",
-            ["1560"] = "Sakura Saku",
-            ["1570"] = "Omoi Wa Ko Kon To Zai",
-            ["1580"] = "Help! heaven!",
-            ["1590"] = "BITE",
-            ["1600"] = "Go★Home!",
-            ["1610"] = "Koi no Recipe",
-            ["9910"] = "Observing Glitch \"YUN-YUN\"",
-            ["9920"] = "Desktop Society",
-            ["9930"] = "Glittering Trap",
-            ["9940"] = "KAKUSEI☆SYNDROME",
-            ["9950"] = "Thanks for playing",
-            ["9960"] = "EXC3PT!ON_H4NDL1NG"
-        };
+        public static bool HasOfficialRate = false;
 
         public static void InitializeCache()
         {
@@ -124,67 +45,52 @@ namespace YunyunRPC
                 gameControllerPointCalculatorField = gameControllerType.GetField("m_PointCalculator", BindingFlags.NonPublic | BindingFlags.Instance);
                 gameControllerDataField = gameControllerType.GetField("m_Data", BindingFlags.NonPublic | BindingFlags.Instance);
                 gameControllerViewModelField = gameControllerType.GetField("m_ViewModel", BindingFlags.NonPublic | BindingFlags.Instance);
+
                 if (gameControllerPointCalculatorField != null)
                 {
                     var pointCalculatorType = gameControllerPointCalculatorField.FieldType;
                     gamePointCalculatorPointProperty = pointCalculatorType.GetProperty("Point");
                     gamePointCalculatorMaxComboProperty = pointCalculatorType.GetProperty("MaxCombo");
+                    gamePointCalculatorRateProperty = pointCalculatorType.GetProperty("Rate")
+                                                   ?? pointCalculatorType.GetProperty("Accuracy")
+                                                   ?? pointCalculatorType.GetProperty("HitRate");
+                    gamePointCalculatorCalcRankMethod = pointCalculatorType.GetMethod("CalcRank", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 }
-                if (gameControllerDataField != null)
-                {
-                    var scoreDataSetType = gameControllerDataField.FieldType;
-                    scoreDataSetMusicNameField = scoreDataSetType.GetField("MusicName", BindingFlags.Public | BindingFlags.Instance);
-                }
+
                 cacheInitialized = true;
                 YunyunRPCPlugin.Log.LogInfo("Cache initialized!");
             }
-            catch (System.Exception ex) { YunyunRPCPlugin.Log.LogError($"Error initializing cache: {ex.Message}"); }
-        }
-
-        public static string GetSongDisplayName(string musicId)
-        {
-            if (string.IsNullOrEmpty(musicId)) return "Unknown Song";
-            var match = System.Text.RegularExpressions.Regex.Match(musicId, @"(\d+)");
-            if (match.Success)
+            catch (System.Exception ex)
             {
-                string songKey = match.Groups[1].Value.TrimStart('0');
-                if (string.IsNullOrEmpty(songKey)) songKey = "0";
-                if (SongNames.TryGetValue(songKey, out string songName)) return songName;
+                YunyunRPCPlugin.Log.LogError($"Error initializing cache: {ex.Message}");
             }
-            return $"Song {match.Value}";
         }
 
         public static string GetDifficultyName(int level)
         {
-            return level switch { 1 => "NORMAL", 3 => "PULSING", 4 => "BURSTING", 5 => "DEGENERATE", _ => $"Lv.{level}" };
+            return level switch
+            {
+                1 => "NORMAL",
+                3 => "PULSING",
+                4 => "BURSTING",
+                5 => "DEGENERATE",
+                _ => $"Lv.{level}"
+            };
         }
 
         public static string GetAccuracyText()
         {
-            try
-            {
-                var gameController = Object.FindFirstObjectByType<GameController>();
-                if (gameController != null)
-                {
-                    var pointCalcField = gameController.GetType().GetField("m_PointCalculator", BindingFlags.NonPublic | BindingFlags.Instance);
-                    var pointCalc = pointCalcField?.GetValue(gameController);
-                    if (pointCalc != null)
-                    {
-                        var rateProp = pointCalc.GetType().GetProperty("Rate");
-                        if (rateProp != null)
-                        {
-                            var rateValue = rateProp.GetValue(pointCalc);
-                            if (rateValue != null) return $"{(double)rateValue * 100:F2}%";
-                        }
-                    }
-                }
-            }
-            catch { }
             return $"{GetAccuracy():F2}%";
         }
 
         public static float GetAccuracy()
         {
+            if (HasOfficialRate)
+            {
+                double percent = CurrentRate <= 1.0001 ? CurrentRate * 100.0 : CurrentRate;
+                return Mathf.Clamp((float)percent, 0f, 100f);
+            }
+
             int totalHits = PerfectCount + GreatCount + GoodCount + MissCount;
             if (totalHits == 0) return 100f;
             float weightedScore = (PerfectCount * 1.0f) + (GreatCount * 0.70f) + (GoodCount * 0.30f);
@@ -198,46 +104,171 @@ namespace YunyunRPC
                 var gameController = Object.FindFirstObjectByType<GameController>();
                 if (gameController != null)
                 {
-                    var pointCalcField = gameController.GetType().GetField("m_PointCalculator", BindingFlags.NonPublic | BindingFlags.Instance);
-                    var pointCalc = pointCalcField?.GetValue(gameController);
+                    var pointCalc = gameControllerPointCalculatorField?.GetValue(gameController);
                     if (pointCalc != null)
                     {
-                        var calcRankMethod = pointCalc.GetType().GetMethod("CalcRank");
-                        if (calcRankMethod != null)
+                        if (gamePointCalculatorCalcRankMethod != null)
                         {
-                            var rank = calcRankMethod.Invoke(pointCalc, null);
-                            if (rank != null) return rank.ToString();
-                        }
-                        var rateProp = pointCalc.GetType().GetProperty("Rate");
-                        if (rateProp != null)
-                        {
-                            var rateValue = rateProp.GetValue(pointCalc);
-                            if (rateValue != null)
+                            var rank = gamePointCalculatorCalcRankMethod.Invoke(pointCalc, null);
+                            if (rank != null)
                             {
-                                double rate = (double)rateValue;
-                                if (rate >= 0.95) return "S";
-                                if (rate >= 0.90) return "A";
-                                if (rate >= 0.80) return "B";
-                                if (rate >= 0.70) return "C";
-                                return "D";
+                                string rankText = rank.ToString();
+                                if (!string.IsNullOrEmpty(rankText) && rankText != "0")
+                                    return rankText;
                             }
                         }
                     }
                 }
             }
             catch { }
-            float acc = GetAccuracy();
-            if (acc >= 99.0f) return "S";
-            if (acc >= 95.0f) return "A";
-            if (acc >= 90.0f) return "B";
-            if (acc >= 80.0f) return "C";
+
+            double rate = CurrentRate <= 1.0001 ? CurrentRate : CurrentRate / 100.0;
+            if (rate >= 0.95) return "S";
+            if (rate >= 0.90) return "A";
+            if (rate >= 0.80) return "B";
+            if (rate >= 0.70) return "C";
             return "D";
+        }
+
+        private static object GetPropertyValueOrField(object obj, string name)
+        {
+            if (obj == null) return null;
+            var type = obj.GetType();
+            var prop = type.GetProperty(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (prop != null) return prop.GetValue(obj);
+            var field = type.GetField(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+            if (field != null) return field.GetValue(obj);
+            return null;
+        }
+
+        public static string GetLocalizedText(string tableName, string key)
+        {
+            if (string.IsNullOrEmpty(key)) return null;
+            try
+            {
+                var stringTable = LocalizationSettings.StringDatabase.GetTable(tableName)
+                               ?? LocalizationSettings.StringDatabase.GetTable("ScoreData_en");
+                if (stringTable != null)
+                {
+                    var entry = stringTable.GetEntry(key);
+                    if (entry != null && !string.IsNullOrEmpty(entry.LocalizedValue))
+                    {
+                        return entry.LocalizedValue;
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                YunyunRPCPlugin.Log.LogDebug($"Failed to look up localization table {tableName} for key {key}: {ex.Message}");
+            }
+            return null;
+        }
+
+        public static void ExtractLevelData(GameController controller, object gameControllerData)
+        {
+            if (gameControllerData == null) return;
+
+            try
+            {
+                var dataType = gameControllerData.GetType();
+
+                FieldInfo levelDataField = dataType.GetField("LevelData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                                       ?? dataType.GetField("ScoreLevelData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+                object levelDataObj = levelDataField?.GetValue(gameControllerData);
+
+                object scoreDataObj = GetPropertyValueOrField(gameControllerData, "ScoreData");
+
+                if (levelDataObj == null && scoreDataObj != null)
+                {
+                    levelDataField = scoreDataObj.GetType().GetField("LevelData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+                                   ?? scoreDataObj.GetType().GetField("ScoreLevelData", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    levelDataObj = levelDataField?.GetValue(scoreDataObj);
+                }
+
+                string title = null;
+                string artist = null;
+                string musicId = null;
+
+                if (levelDataObj != null)
+                {
+                    musicId = GetPropertyValueOrField(levelDataObj, "MusicID")?.ToString()
+                           ?? GetPropertyValueOrField(levelDataObj, "TAG")?.ToString();
+
+                    title = GetPropertyValueOrField(levelDataObj, "Title")?.ToString()
+                         ?? GetPropertyValueOrField(levelDataObj, "SongName")?.ToString()
+                         ?? GetPropertyValueOrField(levelDataObj, "Name")?.ToString();
+
+                    artist = GetPropertyValueOrField(levelDataObj, "Artist")?.ToString()
+                          ?? GetPropertyValueOrField(levelDataObj, "Composer")?.ToString();
+
+                    if (!string.IsNullOrEmpty(musicId))
+                    {
+                        string localizedTitle = GetLocalizedText("ScoreData", $"{musicId}_TITLE")
+                                             ?? GetLocalizedText("ScoreData", musicId);
+
+                        if (!string.IsNullOrEmpty(localizedTitle))
+                        {
+                            title = localizedTitle;
+                        }
+
+                        string localizedArtist = GetLocalizedText("ScoreData", $"{musicId}_ARTIST")
+                                              ?? GetLocalizedText("ScoreData", $"{musicId}_COMPOSER");
+
+                        if (!string.IsNullOrEmpty(localizedArtist))
+                        {
+                            artist = localizedArtist;
+                        }
+                    }
+                }
+
+                CurrentSongDisplayName = !string.IsNullOrWhiteSpace(title) && !title.StartsWith("SONG_") ? title : (musicId ?? "Unknown Song");
+                CurrentArtist = !string.IsNullOrWhiteSpace(artist) ? artist : "Unknown Artist";
+
+                int level = -1;
+                var levelVal = GetPropertyValueOrField(scoreDataObj, "Level");
+                if (levelVal != null)
+                {
+                    level = System.Convert.ToInt32(levelVal);
+                }
+
+                if (level < 0 && levelDataObj != null)
+                {
+                    levelVal = GetPropertyValueOrField(levelDataObj, "Level");
+                    if (levelVal != null)
+                    {
+                        level = System.Convert.ToInt32(levelVal);
+                    }
+                }
+
+                int chartLevel = -1;
+                if (levelDataObj != null)
+                {
+                    var diffVal = GetPropertyValueOrField(levelDataObj, "Difficulty");
+                    if (diffVal != null)
+                    {
+                        chartLevel = System.Convert.ToInt32(diffVal);
+                    }
+                }
+
+                DifficultyLevel = chartLevel > 0 ? chartLevel : 0;
+
+                string diffName = GetDifficultyName(level >= 0 ? level : 1);
+                Difficulty = DifficultyLevel > 0 ? $"{diffName} Lv.{DifficultyLevel}" : diffName;
+
+                YunyunRPCPlugin.Log.LogInfo($"Extracted -> Title: '{CurrentSongDisplayName}', Artist: '{CurrentArtist}', Diff: '{Difficulty}' (level={level}, chart={chartLevel})");
+            }
+            catch (System.Exception ex)
+            {
+                YunyunRPCPlugin.Log.LogError($"Error extracting LevelData: {ex.Message}");
+            }
         }
 
         public static void UpdateFromGameController(GameController controller)
         {
             if (!cacheInitialized) InitializeCache();
             if (controller == null) return;
+
             try
             {
                 var pointCalculator = gameControllerPointCalculatorField?.GetValue(controller);
@@ -245,36 +276,66 @@ namespace YunyunRPC
                 {
                     var pointValue = gamePointCalculatorPointProperty?.GetValue(pointCalculator);
                     if (pointValue != null) CurrentScore = (int)pointValue;
+
                     var maxComboValue = gamePointCalculatorMaxComboProperty?.GetValue(pointCalculator);
                     if (maxComboValue != null) MaxCombo = (int)maxComboValue;
-                }
-                var scoreDataSet = gameControllerDataField?.GetValue(controller);
-                if (scoreDataSet != null)
-                {
-                    var musicName = scoreDataSetMusicNameField?.GetValue(scoreDataSet)?.ToString();
-                    if (!string.IsNullOrEmpty(musicName) && musicName != CurrentSong)
+
+                    var rateValue = gamePointCalculatorRateProperty?.GetValue(pointCalculator)
+                                 ?? GetPropertyValueOrField(pointCalculator, "Rate")
+                                 ?? GetPropertyValueOrField(pointCalculator, "Accuracy")
+                                 ?? GetPropertyValueOrField(pointCalculator, "HitRate");
+                    if (rateValue != null)
                     {
-                        CurrentSong = musicName;
-                        CurrentSongDisplayName = GetSongDisplayName(musicName);
+                        CurrentRate = System.Convert.ToDouble(rateValue);
+                        HasOfficialRate = true;
                     }
                 }
+
                 var viewModel = gameControllerViewModelField?.GetValue(controller);
                 if (viewModel != null)
                 {
                     var viewModelType = viewModel.GetType();
+
                     var comboProp = viewModelType.GetProperty("Combo");
-                    if (comboProp != null) { var comboValue = comboProp.GetValue(viewModel); if (comboValue != null) CurrentCombo = (int)comboValue; }
+                    if (comboProp != null)
+                    {
+                        var comboValue = comboProp.GetValue(viewModel);
+                        if (comboValue != null) CurrentCombo = (int)comboValue;
+                    }
+
                     var perfectProp = viewModelType.GetProperty("PerfectCount");
-                    if (perfectProp != null) { var val = perfectProp.GetValue(viewModel); if (val != null) PerfectCount = (int)val; }
+                    if (perfectProp != null)
+                    {
+                        var val = perfectProp.GetValue(viewModel);
+                        if (val != null) PerfectCount = (int)val;
+                    }
+
                     var greatProp = viewModelType.GetProperty("GreatCount");
-                    if (greatProp != null) { var val = greatProp.GetValue(viewModel); if (val != null) GreatCount = (int)val; }
+                    if (greatProp != null)
+                    {
+                        var val = greatProp.GetValue(viewModel);
+                        if (val != null) GreatCount = (int)val;
+                    }
+
                     var goodProp = viewModelType.GetProperty("GoodCount");
-                    if (goodProp != null) { var val = goodProp.GetValue(viewModel); if (val != null) GoodCount = (int)val; }
+                    if (goodProp != null)
+                    {
+                        var val = goodProp.GetValue(viewModel);
+                        if (val != null) GoodCount = (int)val;
+                    }
+
                     var missProp = viewModelType.GetProperty("MissCount");
-                    if (missProp != null) { var val = missProp.GetValue(viewModel); if (val != null) MissCount = (int)val; }
+                    if (missProp != null)
+                    {
+                        var val = missProp.GetValue(viewModel);
+                        if (val != null) MissCount = (int)val;
+                    }
                 }
             }
-            catch (System.Exception ex) { YunyunRPCPlugin.Log.LogDebug($"Error updating: {ex.Message}"); }
+            catch (System.Exception ex)
+            {
+                YunyunRPCPlugin.Log.LogDebug($"Error updating: {ex.Message}");
+            }
         }
 
         public static void ShowResults()
@@ -284,9 +345,11 @@ namespace YunyunRPC
             IsPlaying = false;
             bool isFullCombo = MissCount == 0 && MaxCombo > 10;
             string rank = GetRank();
+
             var discord = Object.FindFirstObjectByType<DiscordController>();
-            discord?.SetResultPresence(CurrentSongDisplayName, CurrentScore, rank, isFullCombo, GetAccuracyText(), Difficulty);
-            YunyunRPCPlugin.Log.LogInfo($"Rank {rank}: {CurrentSongDisplayName} - Score {CurrentScore}, Accuracy {GetAccuracyText()}");
+            discord?.SetResultPresence(CurrentSongDisplayName, CurrentArtist, CurrentScore, rank, isFullCombo, GetAccuracyText(), Difficulty);
+
+            YunyunRPCPlugin.Log.LogInfo($"Rank {rank}: {CurrentSongDisplayName} by {CurrentArtist} - Score {CurrentScore}, Accuracy {GetAccuracyText()}");
         }
     }
 
@@ -306,33 +369,42 @@ namespace YunyunRPC
             GameStateTracker.GreatCount = 0;
             GameStateTracker.GoodCount = 0;
             GameStateTracker.MissCount = 0;
-            GameStateTracker.CurrentSong = "";
+            GameStateTracker.CurrentRate = 1.0;
+            GameStateTracker.HasOfficialRate = false;
             GameStateTracker.CurrentSongDisplayName = "Loading...";
-
-            GameStateTracker.UpdateFromGameController(__instance);
+            GameStateTracker.CurrentArtist = "Unknown Artist";
+            GameStateTracker.Difficulty = "NORMAL";
+            GameStateTracker.DifficultyLevel = 0;
 
             try
             {
                 var dataField = __instance.GetType().GetField("m_Data", BindingFlags.NonPublic | BindingFlags.Instance);
                 var data = dataField?.GetValue(__instance);
+
                 if (data != null)
                 {
-                    var scoreDataField = data.GetType().GetField("ScoreData");
-                    var scoreData = scoreDataField?.GetValue(data);
-                    if (scoreData != null)
-                    {
-                        var levelField = scoreData.GetType().GetField("Level");
-                        var level = levelField?.GetValue(scoreData);
-                        if (level != null) GameStateTracker.Difficulty = GameStateTracker.GetDifficultyName((int)level);
-                    }
+                    GameStateTracker.ExtractLevelData(__instance, data);
                 }
             }
-            catch { }
+            catch (System.Exception ex)
+            {
+                YunyunRPCPlugin.Log.LogError($"Error in Play Postfix: {ex.Message}");
+            }
+
+            GameStateTracker.UpdateFromGameController(__instance);
 
             var discord = Object.FindFirstObjectByType<DiscordController>();
             if (discord != null)
             {
-                discord.SetGameplayPresence(GameStateTracker.CurrentSongDisplayName, GameStateTracker.CurrentScore, GameStateTracker.CurrentCombo, GameStateTracker.MaxCombo, GameStateTracker.Difficulty, GameStateTracker.GetAccuracyText());
+                discord.SetGameplayPresence(
+                    GameStateTracker.CurrentSongDisplayName,
+                    GameStateTracker.CurrentArtist,
+                    GameStateTracker.CurrentScore,
+                    GameStateTracker.CurrentCombo,
+                    GameStateTracker.MaxCombo,
+                    GameStateTracker.Difficulty,
+                    GameStateTracker.GetAccuracyText()
+                );
             }
         }
     }
@@ -355,6 +427,7 @@ namespace YunyunRPC
             {
                 var viewModelField = __instance.GetType().GetField("m_ViewModel", BindingFlags.NonPublic | BindingFlags.Instance);
                 var viewModel = viewModelField?.GetValue(__instance);
+
                 if (viewModel != null)
                 {
                     var endInputProp = viewModel.GetType().GetProperty("EndInput");
@@ -383,7 +456,11 @@ namespace YunyunRPC
             try
             {
                 var pauseField = __instance.GetType().GetField("m_Pause", BindingFlags.NonPublic | BindingFlags.Instance);
-                if (pauseField != null) { var pauseValue = pauseField.GetValue(__instance); if (pauseValue != null) currentlyPaused = (bool)pauseValue; }
+                if (pauseField != null)
+                {
+                    var pauseValue = pauseField.GetValue(__instance);
+                    if (pauseValue != null) currentlyPaused = (bool)pauseValue;
+                }
             }
             catch { }
 
@@ -391,18 +468,25 @@ namespace YunyunRPC
             {
                 wasPaused = currentlyPaused;
                 GameStateTracker.IsPaused = currentlyPaused;
+
                 var discord = Object.FindFirstObjectByType<DiscordController>();
                 if (discord != null)
                 {
                     if (currentlyPaused)
                     {
-                        discord.SetPausedPresence(GameStateTracker.CurrentSongDisplayName);
-                        YunyunRPCPlugin.Log.LogInfo("Paused");
+                        discord.SetPausedPresence(GameStateTracker.CurrentSongDisplayName, GameStateTracker.CurrentArtist);
                     }
                     else
                     {
-                        discord.SetGameplayPresence(GameStateTracker.CurrentSongDisplayName, GameStateTracker.CurrentScore, GameStateTracker.CurrentCombo, GameStateTracker.MaxCombo, GameStateTracker.Difficulty, GameStateTracker.GetAccuracyText());
-                        YunyunRPCPlugin.Log.LogInfo("Resumed");
+                        discord.SetGameplayPresence(
+                            GameStateTracker.CurrentSongDisplayName,
+                            GameStateTracker.CurrentArtist,
+                            GameStateTracker.CurrentScore,
+                            GameStateTracker.CurrentCombo,
+                            GameStateTracker.MaxCombo,
+                            GameStateTracker.Difficulty,
+                            GameStateTracker.GetAccuracyText()
+                        );
                     }
                 }
                 lastDiscordUpdate = Time.time;
@@ -423,7 +507,15 @@ namespace YunyunRPC
             var discord2 = Object.FindFirstObjectByType<DiscordController>();
             if (discord2 != null)
             {
-                discord2.SetGameplayPresence(GameStateTracker.CurrentSongDisplayName, GameStateTracker.CurrentScore, GameStateTracker.CurrentCombo, GameStateTracker.MaxCombo, GameStateTracker.Difficulty, GameStateTracker.GetAccuracyText());
+                discord2.SetGameplayPresence(
+                    GameStateTracker.CurrentSongDisplayName,
+                    GameStateTracker.CurrentArtist,
+                    GameStateTracker.CurrentScore,
+                    GameStateTracker.CurrentCombo,
+                    GameStateTracker.MaxCombo,
+                    GameStateTracker.Difficulty,
+                    GameStateTracker.GetAccuracyText()
+                );
             }
         }
     }
@@ -434,11 +526,12 @@ namespace YunyunRPC
         static void Prefix()
         {
             if (!GameStateTracker.IsPlaying && !GameStateTracker.IsInResults) return;
-            YunyunRPCPlugin.Log.LogInfo("GameController destroyed");
+
             if (!GameStateTracker.IsInResults) GameStateTracker.ShowResults();
 
             GameStateTracker.IsPlaying = false;
             GameStateTracker.IsInResults = false;
+
             var discord = Object.FindFirstObjectByType<DiscordController>();
             discord?.SetLoadingPresence();
         }
