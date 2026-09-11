@@ -40,5 +40,6 @@ Just play the game. The Discord Activity will show up automatically.
 
 ## Showcase
 
-<img width="735" height="585" alt="preview1" src="https://github.com/user-attachments/assets/fca87e58-ce05-4874-8ef1-0bbd030487ae" />
-<img width="735" height="585" alt="preview" src="https://github.com/user-attachments/assets/714e74f4-57b6-4692-83d9-7f0a112b158c" />
+<img width="708" height="669" alt="preview1" src="https://github.com/user-attachments/assets/12a962aa-7f30-4cc8-81f9-f3f5b0714778" />
+<img width="449" height="538" alt="preview2" src="https://github.com/user-attachments/assets/2bba8051-314d-4b03-b88c-0d536c26e3c0" />
+(Modded Song by the Discord User **sageshrooms** available on [YunYunLoader](https://github.com/EBro912/YunYunLoader) Discord server).
