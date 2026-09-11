@@ -15,26 +15,28 @@ Shows current game state, active loop, phase details, and status during gameplay
 
 Just play the game. The Discord Activity will show up automatically.
 
-**Please make sure your Discord desktop app is open before starting the game.** If you open Discord after launching the game, you may need to restart the game for the Discord status to work properly.
+> **Note:** If you launch Discord *after* starting the game, you may need to restart the game for Rich Presence to connect properly.
 
 ## Features
 
-- **Real-Time State:** Automatically tracks and displays game states and loop events.
-- **Dynamic Updates:** Uses state patches to maintain live synchronization with Discord.
+- **Real-Time Gameplay Tracking:** Displays live score, current combo, max combo, and song information.
+- **Detailed Performance Ratings:** Accurately displays your live **Accuracy (%)**, **Score**, **Difficulty** (Normal, Pulsing, Bursting, Degenerate), and final **Rank** (S, A, B, C, D).
+- **YunyunLoader Compatible:** Native support for YunyunLoader and standard BepInEx mods.
+- **Dynamic State Synchronization:** Automatically handles play, pause, song end, and result screen transitions.
 - **Lightweight:** Built specifically for Yunyun Syndrome!? with minimal performance footprint.
 
 ## Work in progress
 
-  - **Location Detection:**
+  - **Location & UI Detection:**
   - Title Screen status
   - In-game Desktop detection
   - Open application tracking (within the game's OS)
   - Q's House status
-  - **Mod Loader Support:** Implement native support for [YunyunLoader](https://github.com/EBro912/YunYunLoader) in future updates (if applicable).
 
 ## Thanks
 
 This mod is inspired by [MDRPC](https://github.com/Braasileiro/MDRPC).
+**[EBro912](https://github.com/EBro912)** - Creator of [YunYunLoader](https://github.com/EBro912/YunYunLoader), for the guidance and assistance with loader integration.
 
 ## Showcase
 
