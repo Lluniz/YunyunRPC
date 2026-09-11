@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace YunyunRPC
 {
-    [BepInPlugin("com.seunome.yunyunrpc", "YunyunRPC", "1.0.0")]
+    [BepInPlugin("com.seunome.yunyunrpc", "YunyunRPC", "0.5.0")]
     [BepInDependency("com.bepinex.bepinex", BepInDependency.DependencyFlags.SoftDependency)]
     public class YunyunRPCPlugin : BaseUnityPlugin
     {
@@ -20,7 +20,7 @@ namespace YunyunRPC
             Instance = this;
             Log = Logger;
             Log.LogMessage("╔════════════════════════════════════╗");
-            Log.LogMessage("║     YunyunRPC Mod Running!      ║");
+            Log.LogMessage("║     YunyunRPC Mod Running!         ║");
             Log.LogMessage("╚════════════════════════════════════╝");
 
             discordController = gameObject.AddComponent<DiscordController>();
