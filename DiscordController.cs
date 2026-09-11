@@ -47,7 +47,7 @@ namespace YunyunRPC
         {
             client?.Invoke();
 
-            if (isLoading && !firstTimeLoaded && Time.time - loadingStartTime > 20f)
+            if (isLoading && !firstTimeLoaded && Time.time - loadingStartTime > 10f)
             {
                 isLoading = false;
                 firstTimeLoaded = true;
@@ -58,7 +58,7 @@ namespace YunyunRPC
                     Assets = new Assets
                     {
                         LargeImageKey = "game_logo",
-                        LargeImageText = "YunyunRPC v0.0.1"
+                        LargeImageText = "YunyunRPC v0.5.0"
                     },
                     Timestamps = new Timestamps(System.DateTime.UtcNow)
                 });
@@ -79,7 +79,7 @@ namespace YunyunRPC
                     Assets = new Assets
                     {
                         LargeImageKey = "game_logo",
-                        LargeImageText = "YunyunRPC v0.0.1"
+                        LargeImageText = "YunyunRPC v0.5.0"
                     },
                     Timestamps = new Timestamps(System.DateTime.UtcNow)
                 });
@@ -93,21 +93,22 @@ namespace YunyunRPC
                     Assets = new Assets
                     {
                         LargeImageKey = "game_logo",
-                        LargeImageText = "YunyunRPC v0.0.1"
+                        LargeImageText = "YunyunRPC v0.5.0"
                     },
                     Timestamps = new Timestamps(System.DateTime.UtcNow)
                 });
             }
         }
 
-        public void SetGameplayPresence(string songName, int score, int combo, int maxCombo, string difficulty, string accuracy)
+        public void SetGameplayPresence(string songName, string artistName, int score, int combo, int maxCombo, string difficulty, string accuracy)
         {
             isLoading = false;
             string stateText = $"Score: {score:N0} | Combo: {combo}x | Accuracy: {accuracy}";
+            string artistText = string.IsNullOrEmpty(artistName) ? "" : $" by {artistName}";
 
             UpdatePresence(new RichPresence
             {
-                Details = $"Playing: {songName} [{difficulty}]",
+                Details = $"Playing: {songName}{artistText} [{difficulty}]",
                 State = stateText,
                 Assets = new Assets
                 {
@@ -119,36 +120,39 @@ namespace YunyunRPC
             });
         }
 
-        public void SetPausedPresence(string songName)
+        public void SetPausedPresence(string songName, string artistName)
         {
             isLoading = false;
+            string artistText = string.IsNullOrEmpty(artistName) ? "" : $" by {artistName}";
+
             UpdatePresence(new RichPresence
             {
-                Details = $"Paused: {songName}",
+                Details = $"Paused: {songName}{artistText}",
                 State = "Game paused",
                 Assets = new Assets
                 {
                     LargeImageKey = "game_logo",
-                    LargeImageText = "YunyunRPC v0.0.1",
+                    LargeImageText = "YunyunRPC v0.5.0",
                     SmallImageKey = "status_icon",
                     SmallImageText = ""
                 }
             });
         }
 
-        public void SetResultPresence(string songName, int finalScore, string rank, bool isFullCombo, string accuracy, string difficulty)
+        public void SetResultPresence(string songName, string artistName, int finalScore, string rank, bool isFullCombo, string accuracy, string difficulty)
         {
             isLoading = false;
             string rankEmoji = rank switch { "S" => "🏆", "A" => "⭐", "B" => "👍", "C" => "📋", _ => "📊" };
+            string artistText = string.IsNullOrEmpty(artistName) ? "" : $" by {artistName}";
 
             UpdatePresence(new RichPresence
             {
-                Details = $"{rankEmoji} {songName} [{difficulty}] - Rank {rank}",
+                Details = $"{rankEmoji} {songName}{artistText} [{difficulty}] - Rank {rank}",
                 State = $"Score: {finalScore:N0} | Accuracy: {accuracy}" + (isFullCombo ? " | ✨ FULL COMBO!" : ""),
                 Assets = new Assets
                 {
                     LargeImageKey = "game_logo",
-                    LargeImageText = "YunyunRPC v0.0.1",
+                    LargeImageText = "YunyunRPC v0.5.0",
                     SmallImageKey = "status_icon",
                     SmallImageText = ""
                 }
