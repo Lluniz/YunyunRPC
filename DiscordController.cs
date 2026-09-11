@@ -113,7 +113,7 @@ namespace YunyunRPC
                 Assets = new Assets
                 {
                     LargeImageKey = "game_logo",
-                    LargeImageText = "YunyunRPC v0.0.1",
+                    LargeImageText = "YunyunRPC v0.5.0",
                     SmallImageKey = "status_icon",
                     SmallImageText = ""
                 }
