@@ -45,4 +45,6 @@ Just play the game. The Discord Activity will show up automatically.
   <br><br>
   <img width="450" alt="preview2" src="https://github.com/user-attachments/assets/2bba8051-314d-4b03-b88c-0d536c26e3c0" />
 </p>
-(Modded Song by the Discord User **sageshrooms** available on [YunYunLoader](https://github.com/EBro912/YunYunLoader) Discord server).
+<p align="center">
+  (Modded Song by the Discord User <b>sageshrooms</b> available on <a href="https://github.com/EBro912/YunYunLoader">YunYunLoader</a> Discord server).
+</p>
