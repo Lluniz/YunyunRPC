@@ -9,7 +9,7 @@ Shows current game state, active loop, phase details, and status during gameplay
 ## Installation
 
 1. Install [BepInEx](https://github.com/BepInEx/BepInEx/releases/tag/v5.4.23.5).
-2. Download the [latest release](https://github.com/your-username/YunyunRPC/releases) and extract the contents into the `BepInEx/plugins` folder in your Yunyun Syndrome!? installation directory.
+2. Download the [latest release](https://github.com/Lluniz/YunyunRPC/releases) and extract the contents into the `BepInEx/plugins` folder in your Yunyun Syndrome!? installation directory.
 
 ## Usage
 
